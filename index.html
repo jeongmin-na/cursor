@@ -4,122 +4,485 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>커서 AI 개발 도구 도입 가이드 · Static TOC</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<title>커서 AI 개발 도구 도입 가이드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --bg: #ffffff; --fg: #0f172a; --muted: #475569;
-  --card: #f8fafc; --brand: #2563eb; --brand-weak: #e2e8f0;
-  --border: #e5e7eb; --code-bg: #0f172a; --code-fg: #e5ecff;
-  --radius: 16px; --shadow: 0 4px 20px rgba(2, 6, 23, 0.06);
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #3b82f6;
+  --accent: #06b6d4;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-accent: #f1f5f9;
+  --bg-code: #0f172a;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-accent: #1e293b;
+  
+  --border-light: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --border-dark: #94a3b8;
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 }
-* { box-sizing:border-box; }
+
+* { 
+  box-sizing: border-box; 
+  margin: 0;
+  padding: 0;
+}
+
 body {
-  margin:0; background:var(--bg); color:var(--fg);
-  font-family: "Noto Sans KR", system-ui, -apple-system, Segoe UI, Roboto, Apple SD Gothic Neo, "Malgun Gothic", sans-serif;
-  line-height:1.7;
+  font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.7;
+  color: var(--text-primary);
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  min-height: 100vh;
 }
-header.hero {
-  position: sticky; top:0; z-index: 10;
-  background: #ffffffF2;
-  border-bottom:1px solid var(--border);
+
+/* Header */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
 }
-header .inner {
-  max-width: 1200px; margin: 0 auto; padding: 12px 24px;
-  display:flex; align-items:center; justify-content:space-between; gap:16px;
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
-.brand { display:flex; gap:10px; align-items:center; font-weight:700; }
-.brand .logo { width:28px; height:28px; background:var(--brand); color:#fff; border-radius:8px; display:grid; place-items:center; font-weight:800; box-shadow:var(--shadow);}
-.container { max-width:1200px; margin:0 auto; padding:24px; display:grid; gap:24px; grid-template-columns: 280px 1fr; }
-aside.toc {
-  position: sticky; top:70px; height: calc(100dvh - 90px);
-  border:1px solid var(--border); border-radius: var(--radius);
-  padding: 16px; background:var(--card); box-shadow: var(--shadow); overflow:auto;
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--text-primary);
 }
-aside.toc h3 { margin:0 0 8px; font-size:14px; color:var(--muted); }
-#toc-list { list-style: none; padding: 0 0 0 0; margin:0; }
-#toc-list li { margin: 4px 0; }
-#toc-list a { display:block; padding:8px 10px; border-radius:8px; text-decoration:none; color:var(--fg); border:1px solid transparent; }
-#toc-list a:hover { background:var(--brand-weak); border-color:var(--border); }
-main.article { border:1px solid var(--border); border-radius: var(--radius); background:var(--card); box-shadow:var(--shadow); }
-.article .cover { padding: 28px; border-bottom:1px solid var(--border); }
-.article .cover h1 { margin:0; font-size:28px; line-height:1.25; }
-.article .cover p { margin:6px 0 0; color:var(--muted); }
-.content { padding: 28px; }
-.content h2 { margin-top: 40px; padding-top: 10px; border-top: 1px solid var(--border); }
-.content h3 { margin-top: 24px; }
-.content p { margin: 10px 0; }
-.content ul, .content ol { padding-left: 22px; }
-/* Code visibility */
-.content pre, .content pre code, .content pre * { background: transparent !important; color: inherit !important; }
-.content pre { background: var(--code-bg) !important; color: var(--code-fg) !important; padding: 14px 16px; border-radius: 12px; overflow:auto; margin: 14px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
-.content code { background: transparent !important; color: inherit !important; padding: 0.1em 0.3em; border-radius: 4px; }
-/* Anchor offset for sticky header */
-.content h1, .content h2, .content h3, .content h4 { scroll-margin-top: 88px; }
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 800;
+  font-size: 18px;
+  box-shadow: var(--shadow);
+}
+
+/* Layout */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* Table of Contents */
+.toc {
+  position: sticky;
+  top: 100px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+
+.toc h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-accent);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toc h3::before {
+  content: "📑";
+  font-size: 20px;
+}
+
+.toc-list {
+  list-style: none;
+}
+
+.toc-list > li {
+  margin: 0;
+}
+
+.toc-list a {
+  display: block;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.toc-list a:hover {
+  background: var(--bg-accent);
+  color: var(--primary);
+  border-color: var(--border-medium);
+  transform: translateX(4px);
+}
+
+.toc-list ul {
+  list-style: none;
+  margin-left: 16px;
+  margin-top: 4px;
+}
+
+.toc-list ul a {
+  font-size: 13px;
+  padding: 8px 12px;
+  color: var(--text-muted);
+}
+
+/* Main Content */
+.main-content {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+
+.content-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.content-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.content-header p {
+  font-size: 18px;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+.content-body {
+  padding: 40px 32px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-accent);
+  font-weight: 600;
+  line-height: 1.4;
+  scroll-margin-top: 90px;
+}
+
+h2 {
+  font-size: 28px;
+  margin: 48px 0 24px 0;
+  padding-top: 24px;
+  border-top: 2px solid var(--border-light);
+  position: relative;
+}
+
+h2::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+
+h3 {
+  font-size: 22px;
+  margin: 32px 0 16px 0;
+  color: var(--primary-dark);
+}
+
+h4 {
+  font-size: 18px;
+  margin: 24px 0 12px 0;
+  color: var(--text-accent);
+}
+
+p {
+  margin: 16px 0;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+/* Lists */
+ul, ol {
+  margin: 16px 0;
+  padding-left: 24px;
+}
+
+li {
+  margin: 8px 0;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+li strong {
+  color: var(--text-accent);
+  font-weight: 600;
+}
+
+/* Code */
+code {
+  font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+  background: var(--bg-accent);
+  color: var(--text-accent);
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9em;
+  font-weight: 500;
+  border: 1px solid var(--border-light);
+}
+
+pre {
+  background: var(--bg-code);
+  color: #e2e8f0;
+  padding: 24px;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  margin: 24px 0;
+  border: 1px solid var(--border-medium);
+  box-shadow: var(--shadow);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  border: none;
+  font-size: inherit;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  background: var(--bg-primary);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-light);
+}
+
+th {
+  background: linear-gradient(135deg, var(--bg-accent) 0%, var(--bg-secondary) 100%);
+  color: var(--text-accent);
+  font-weight: 600;
+  padding: 16px;
+  text-align: left;
+  border-bottom: 2px solid var(--border-medium);
+}
+
+td {
+  padding: 14px 16px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+tr:hover {
+  background: var(--bg-secondary);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+/* Highlight Boxes */
+.highlight-box {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 1px solid #93c5fd;
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin: 24px 0;
+  box-shadow: var(--shadow);
+}
+
+.highlight-box strong {
+  color: var(--primary-dark);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.highlight-box ul {
+  margin-top: 12px;
+}
+
+.highlight-box li {
+  color: var(--text-accent);
+}
+
+/* Success Box */
+.success-box {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 1px solid #6ee7b7;
+  border-left: 4px solid var(--success);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin: 24px 0;
+  box-shadow: var(--shadow);
+}
+
+.success-box strong {
+  color: #065f46;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* Warning Box */
+.warning-box {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #fbbf24;
+  border-left: 4px solid var(--warning);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin: 24px 0;
+  box-shadow: var(--shadow);
+}
+
+.warning-box strong {
+  color: #92400e;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  background: var(--primary);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 8px;
+}
+
+.badge.new { background: var(--success); }
+.badge.updated { background: var(--warning); }
+
 /* Responsive */
-@media (max-width: 980px) { .container { grid-template-columns: 1fr; } aside.toc { position: static; height: auto; order:2; } main.article { order:1; } }
-@media print { header, aside.toc { display:none !important; } body { background:white; color:black; } main.article { box-shadow:none; border: none; } }
+@media (max-width: 1024px) {
+  .container {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .toc { position: static; order: 2; max-height: none; }
+  .main-content { order: 1; }
+}
+
+@media (max-width: 768px) {
+  .container { padding: 24px 16px; }
+  .content-header { padding: 32px 24px; }
+  .content-header h1 { font-size: 28px; }
+  .content-body { padding: 32px 24px; }
+  .header-content { padding: 12px 16px; }
+  h2 { font-size: 24px; }
+  h3 { font-size: 20px; }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-dark); }
+
+/* Print Styles */
+@media print {
+  .header, .toc { display: none !important; }
+  .container { grid-template-columns: 1fr; max-width: none; padding: 0; }
+  .main-content { box-shadow: none; border: none; }
+  body { background: white; color: black; }
+}
+
+/* Animation */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.main-content { animation: fadeIn 0.6s ease-out; }
+.toc { animation: fadeIn 0.8s ease-out; }
+
+/* Prevent accidental styling inside content body */
+.content-body .toc-list { list-style: disc; margin-left: 24px; padding-left: 24px; }
+.content-body .toc-list a { display: inline; padding: 0; border: none; color: inherit; background: none; transform: none; }
 </style>
 </head>
 <body>
-
-<div class="container">
-<aside aria-label="Table of contents" class="toc">
-<h3>목차</h3>
-<ul id="toc-list"><ul><li><a href="#목차">목차</a></li></ul><li><a href="#1-커서-ai-도구-소개">1. 커서 AI 도구 소개</a></li><ul><li><a href="#11-커서-ai란-무엇인가">1.1 커서 AI란 무엇인가</a></li><li><a href="#12-주요-특징">1.2 주요 특징</a></li><li><a href="#13-vs-code와의-차이점">1.3 VS Code와의 차이점</a></li><li><a href="#14-기존-도구와의-차별점">1.4 기존 도구와의 차별점</a></li><li><a href="#15-지원-기술-스택">1.5 지원 기술 스택</a></li></ul><li><a href="#2-설치-및-초기-설정">2. 설치 및 초기 설정</a></li><ul><li><a href="#21-시스템-요구사항">2.1 시스템 요구사항</a></li><li><a href="#22-설치-과정">2.2 설치 과정</a></li><li><a href="#23-vs-code-설정-가져오기">2.3 VS Code 설정 가져오기</a></li></ul><li><a href="#3-핵심-기능별-상세-사용법">3. 핵심 기능별 상세 사용법</a></li><ul><li><a href="#31-ai-자동완성-tab-기능">3.1 AI 자동완성 (Tab 기능)</a></li><li><a href="#32-채팅-인터페이스-ctrll">3.2 채팅 인터페이스 (Ctrl+L)</a></li><li><a href="#33-미니-프롬프트-ctrlk">3.3 미니 프롬프트 (Ctrl+K)</a></li><li><a href="#34-고급-채팅-모드-chat-with-codebase">3.4 고급 채팅 모드 (Chat with Codebase)</a></li><li><a href="#35-단축키-및-빠른-작업">3.5 단축키 및 빠른 작업</a></li><li><a href="#36-고급-심볼-기능">3.6 고급 @심볼 기능</a></li><li><a href="#37-터미널-ai-기능-cursor-terminal">3.7 터미널 AI 기능 (Cursor Terminal)</a></li></ul><li><a href="#5-고급-설정-및-최적화">5. 고급 설정 및 최적화</a></li><ul><li><a href="#41-프라이버시-모드">4.1 프라이버시 모드</a></li><li><a href="#42-ai-모델-선택-및-설정-2025년-9월-최신-가이드">4.2 AI 모델 선택 및 설정 (2025년 9월 최신 가이드)</a></li><ul><li><a href="#421-claude-4-sonnet-개발자를-위한-최강-모델-">4.2.1 Claude 4 Sonnet: 개발자를 위한 최강 모델 🏆</a></li><li><a href="#422-gpt-5-agi-수준의-추론-능력-">4.2.2 GPT-5: AGI 수준의 추론 능력 🧠</a></li><li><a href="#423-grok-3-실시간-정보-접근-특화-">4.2.3 Grok 3: 실시간 정보 접근 특화 ⚡</a></li><li><a href="#424-gemini-25-pro-거대-컨텍스트-분석-전문-">4.2.4 Gemini 2.5 Pro: 거대 컨텍스트 분석 전문 📚</a></li><li><a href="#425-모델별-성능-벤치마크-비교">4.2.5 모델별 성능 벤치마크 비교</a></li><li><a href="#426-프로젝트-유형별-최적-모델-선택">4.2.6 프로젝트 유형별 최적 모델 선택</a></li><li><a href="#427-모델-변경-및-설정-방법">4.2.7 모델 변경 및 설정 방법</a></li><li><a href="#428-주의사항-및-모범-사례">4.2.8 주의사항 및 모범 사례</a></li></ul><li><a href="#43-vs-code-확장프로그램-연동">4.3 VS Code 확장프로그램 연동</a></li></ul><li><a href="#5-실전-활용-예시">5. 실전 활용 예시</a></li><ul><li><a href="#51-새-프로젝트-시작하기">5.1 새 프로젝트 시작하기</a></li><li><a href="#52-레거시-코드-리팩토링">5.2 레거시 코드 리팩토링</a></li><li><a href="#53-api-연동-코드-생성">5.3 API 연동 코드 생성</a></li><li><a href="#54-테스트-코드-자동-생성">5.4 테스트 코드 자동 생성</a></li></ul><li><a href="#6-모범-사례-및-주의사항">6. 모범 사례 및 주의사항</a></li><ul><li><a href="#61-효과적인-프롬프트-작성법">6.1 효과적인 프롬프트 작성법</a></li><li><a href="#62-코드-품질-관리">6.2 코드 품질 관리</a></li><li><a href="#63-팀-협업-가이드라인">6.3 팀 협업 가이드라인</a></li></ul><li><a href="#7-팀-협업을-위한-설정-및-규칙">7. 팀 협업을 위한 설정 및 규칙</a></li><ul><li><a href="#71-cursorrules-파일-활용-향상된-규칙-시스템">7.1 .cursorrules 파일 활용 (향상된 규칙 시스템)</a></li><li><a href="#72-requirementsmd-작성-가이드">7.2 Requirements.md 작성 가이드</a></li><li><a href="#73-팀-역할별-활용-가이드">7.3 팀 역할별 활용 가이드</a></li></ul><li><a href="#8-문제해결-가이드">8. 문제해결 가이드</a></li><ul><li><a href="#81-일반적인-문제-및-해결방법">8.1 일반적인 문제 및 해결방법</a></li><li><a href="#82-주요-문제-유형별-분석">8.2 주요 문제 유형별 분석</a></li><li><a href="#83-트러블슈팅-체크리스트">8.3 트러블슈팅 체크리스트</a></li></ul><li><a href="#9-cursor-ai-워크플로우-완전-가이드">9. Cursor AI 워크플로우 완전 가이드</a></li><ul><li><a href="#91-개발-모드-선택-원칙과-효율성-극대화">9.1 개발 모드 선택 원칙과 효율성 극대화</a></li><ul><li><a href="#911-상황별-모드-매칭-매트릭스">9.1.1 상황별 모드 매칭 매트릭스</a></li><li><a href="#912-모드-전환-최적화-전략">9.1.2 모드 전환 최적화 전략</a></li></ul><li><a href="#92-일일-개발-루프-최적화-daily-development-loop">9.2 일일 개발 루프 최적화 (Daily Development Loop)</a></li><ul><li><a href="#921-아침-시작-루틴-morning-kickstart---15분">9.2.1 아침 시작 루틴 (Morning Kickstart - 15분)</a></li><li><a href="#922-개발-집중-시간-development-sprint---4시간">9.2.2 개발 집중 시간 (Development Sprint - 4시간)</a></li><li><a href="#923-오후-정리-루틴-afternoon-wrap-up---30분">9.2.3 오후 정리 루틴 (Afternoon Wrap-up - 30분)</a></li></ul><li><a href="#93-고급-리팩터링-방법론">9.3 고급 리팩터링 방법론</a></li><ul><li><a href="#931-단계별-리팩터링-프로세스">9.3.1 단계별 리팩터링 프로세스</a></li><li><a href="#932-리팩터링-품질-메트릭">9.3.2 리팩터링 품질 메트릭</a></li></ul><li><a href="#94-ai-기반-코드-리뷰-시스템">9.4 AI 기반 코드 리뷰 시스템</a></li><ul><li><a href="#941-자동-코드-리뷰-체크리스트">9.4.1 자동 코드 리뷰 체크리스트</a></li><li><a href="#942-ai-리뷰어-프롬프트-템플릿">9.4.2 AI 리뷰어 프롬프트 템플릿</a></li></ul><li><a href="#95-테스트-자동화-워크플로우">9.5 테스트 자동화 워크플로우</a></li><ul><li><a href="#951-tdd-with-ai-워크플로우">9.5.1 TDD with AI 워크플로우</a></li><li><a href="#952-테스트-케이스-생성-전략">9.5.2 테스트 케이스 생성 전략</a></li></ul><li><a href="#96-디버깅-및-오류-해결-프로세스">9.6 디버깅 및 오류 해결 프로세스</a></li><ul><li><a href="#961-스마트-디버깅-프로세스">9.6.1 스마트 디버깅 프로세스</a></li><li><a href="#962-로그-분석-자동화">9.6.2 로그 분석 자동화</a></li></ul><li><a href="#97-팀-협업-및-지식-공유-최적화">9.7 팀 협업 및 지식 공유 최적화</a></li><ul><li><a href="#971-지식-관리-시스템-knowledge-management-system">9.7.1 지식 관리 시스템 (Knowledge Management System)</a></li><li><a href="#972-코드-리뷰-문화-개선">9.7.2 코드 리뷰 문화 개선</a></li></ul><li><a href="#98-성능-최적화-자동화">9.8 성능 최적화 자동화</a></li><ul><li><a href="#981-성능-모니터링-및-분석">9.8.1 성능 모니터링 및 분석</a></li><li><a href="#982-자동-성능-최적화-워크플로우">9.8.2 자동 성능 최적화 워크플로우</a></li></ul><li><a href="#99-배포-및-devops-자동화">9.9 배포 및 DevOps 자동화</a></li><ul><li><a href="#991-cicd-파이프라인-최적화">9.9.1 CI/CD 파이프라인 최적화</a></li></ul><li><a href="#910-kpi-및-생산성-측정">9.10 KPI 및 생산성 측정</a></li><ul><li><a href="#9101-생산성-지표-대시보드">9.10.1 생산성 지표 대시보드</a></li><li><a href="#9102-주간-성과-리포트-자동화">9.10.2 주간 성과 리포트 자동화</a></li></ul><li><a href="#911-보안-및-컴플라이언스-자동화">9.11 보안 및 컴플라이언스 자동화</a></li><ul><li><a href="#9111-자동화된-보안-감사-시스템">9.11.1 자동화된 보안 감사 시스템</a></li></ul><li><a href="#912-지속적-학습-및-개선-체계">9.12 지속적 학습 및 개선 체계</a></li><ul><li><a href="#9121-개인화된-학습-경로">9.12.1 개인화된 학습 경로</a></li><li><a href="#9122-팀-역량-강화-프로그램">9.12.2 팀 역량 강화 프로그램</a></li></ul></ul></ul>
-</aside>
-<main class="article" role="main">
-
-<section class="content" id="content">
-<h1>커서(Cursor) AI 개발 도구 도입 가이드</h1>
-<div class="toc">
-<h3 id="목차">목차</h3>
-<ul>
-<li>
-          1. 커서 AI 도구 소개
-          <ul>
-<li>1.1 커서 AI란 무엇인가</li>
-<li>1.2 주요 특징</li>
-<li>1.3 VS Code와의 차이점</li>
-<li>1.4 기존 도구와의 차별점</li>
-<li>1.5 지원 기술 스택</li>
-</ul>
-</li>
-<li>2. 설치 및 초기 설정</li>
-<li>
-          3. 핵심 기능별 상세 사용법
-          <ul>
-<li>3.1 AI 자동완성 (Tab 기능)</li>
-<li>3.2 채팅 인터페이스 (Ctrl+L)</li>
-<li>3.3 미니 프롬프트 (Ctrl+K)</li>
-<li>3.4 컴포저(Composer) 기능</li>
-<li>3.5 에이전트 모드</li>
-<li>3.6 고급 @심볼 기능</li>
-<li>3.7 터미널 AI 기능</li>
-</ul>
-</li>
-<li>
-          4. 고급 설정 및 최적화
-          <ul>
-<li>4.1 프라이버시 모드</li>
-<li>4.2 AI 모델 선택 및 설정</li>
-<li>4.3 VS Code 확장프로그램 연동</li>
-</ul>
-</li>
-<li>5. 실전 활용 예시</li>
-<li>
-          6. 모범 사례 및 주의사항
-          <ul>
-<li>6.1 효과적인 프롬프트 작성법</li>
-<li>6.2 코드 품질 관리</li>
-<li>6.3 팀 협업 가이드라인</li>
-</ul>
-</li>
-<li>7. 팀 협업을 위한 설정 및 규칙</li>
-<li>8. 문제해결 가이드</li>
-<li>9. 워크플로우 최적화 방안</li>
-</ul>
+<header class="header">
+<div class="header-content">
+<div class="logo">
+<div class="logo-icon">C</div>
+<span>Cursor AI 가이드 - 2025년 최신판</span>
 </div>
+</div>
+</header>
+<div class="container">
+<aside aria-label="Table of contents" class="toc" role="navigation">
+<h3>목차</h3>
+<ul class="toc-list"><li><a href="#1-커서-ai-도구-소개">1. 커서 AI 도구 소개</a></li><ul><li><a href="#11-커서-ai란-무엇인가">1.1 커서 AI란 무엇인가</a></li><li><a href="#12-주요-특징">1.2 주요 특징</a></li><li><a href="#13-vs-code와의-차이점">1.3 VS Code와의 차이점</a></li><li><a href="#14-기존-도구와의-차별점">1.4 기존 도구와의 차별점</a></li><li><a href="#15-지원-기술-스택">1.5 지원 기술 스택</a></li></ul><li><a href="#2-설치-및-초기-설정">2. 설치 및 초기 설정</a></li><ul><li><a href="#21-시스템-요구사항">2.1 시스템 요구사항</a></li><li><a href="#22-설치-과정">2.2 설치 과정</a></li><li><a href="#23-vs-code-설정-가져오기">2.3 VS Code 설정 가져오기</a></li></ul><li><a href="#3-핵심-기능별-상세-사용법">3. 핵심 기능별 상세 사용법</a></li><ul><li><a href="#31-ai-자동완성-tab-기능">3.1 AI 자동완성 (Tab 기능)</a></li><li><a href="#32-채팅-인터페이스-ctrll">3.2 채팅 인터페이스 (Ctrl+L)</a></li><li><a href="#33-미니-프롬프트-ctrlk">3.3 미니 프롬프트 (Ctrl+K)</a></li><li><a href="#34-고급-채팅-모드-chat-with-codebase">3.4 고급 채팅 모드 (Chat with Codebase)</a></li><li><a href="#35-단축키-및-빠른-작업">3.5 단축키 및 빠른 작업</a></li><li><a href="#36-고급-심볼-기능">3.6 고급 @심볼 기능</a></li><li><a href="#37-터미널-ai-기능-cursor-terminal">3.7 터미널 AI 기능 (Cursor Terminal)</a></li></ul><li><a href="#5-고급-설정-및-최적화">4. 고급 설정 및 최적화</a></li><ul><li><a href="#41-프라이버시-모드">4.1 프라이버시 모드</a></li><li><a href="#42-ai-모델-선택-및-설정-2025년-9월-최신-가이드">4.2 AI 모델 선택 및 설정 (2025년 9월 최신 가이드)</a></li><ul><li><a href="#421-claude-4-sonnet-개발자를-위한-최강-모델-">4.2.1 Claude 4 Sonnet: 개발자를 위한 최강 모델 🏆</a></li><li><a href="#422-gpt-5-agi-수준의-추론-능력-">4.2.2 GPT-5: AGI 수준의 추론 능력 🧠</a></li><li><a href="#423-grok-3-실시간-정보-접근-특화-">4.2.3 Grok 3: 실시간 정보 접근 특화 ⚡</a></li><li><a href="#424-gemini-25-pro-거대-컨텍스트-분석-전문-">4.2.4 Gemini 2.5 Pro: 거대 컨텍스트 분석 전문 📚</a></li><li><a href="#425-모델별-성능-벤치마크-비교">4.2.5 모델별 성능 벤치마크 비교</a></li><li><a href="#426-프로젝트-유형별-최적-모델-선택">4.2.6 프로젝트 유형별 최적 모델 선택</a></li><li><a href="#427-모델-변경-및-설정-방법">4.2.7 모델 변경 및 설정 방법</a></li><li><a href="#428-주의사항-및-모범-사례">4.2.8 주의사항 및 모범 사례</a></li></ul><li><a href="#43-vs-code-확장프로그램-연동">4.3 VS Code 확장프로그램 연동</a></li></ul><li><a href="#5-실전-활용-예시">5. 실전 활용 예시</a></li><ul><li><a href="#51-새-프로젝트-시작하기">5.1 새 프로젝트 시작하기</a></li><li><a href="#52-레거시-코드-리팩토링">5.2 레거시 코드 리팩토링</a></li><li><a href="#53-api-연동-코드-생성">5.3 API 연동 코드 생성</a></li><li><a href="#54-테스트-코드-자동-생성">5.4 테스트 코드 자동 생성</a></li></ul><li><a href="#6-모범-사례-및-주의사항">6. 모범 사례 및 주의사항</a></li><ul><li><a href="#61-효과적인-프롬프트-작성법">6.1 효과적인 프롬프트 작성법</a></li><li><a href="#62-코드-품질-관리">6.2 코드 품질 관리</a></li><li><a href="#63-팀-협업-가이드라인">6.3 팀 협업 가이드라인</a></li></ul><li><a href="#7-팀-협업을-위한-설정-및-규칙">7. 팀 협업을 위한 설정 및 규칙</a></li><ul><li><a href="#71-cursorrules-파일-활용-향상된-규칙-시스템">7.1 cursorrules 파일 활용 (향상된 규칙 시스템)</a></li><li><a href="#72-requirementsmd-작성-가이드">7.2 Requirements.md 작성 가이드</a></li><li><a href="#73-팀-역할별-활용-가이드">7.3 팀 역할별 활용 가이드</a></li></ul><li><a href="#8-문제해결-가이드">8. 문제해결 가이드</a></li><ul><li><a href="#81-일반적인-문제-및-해결방법">8.1 일반적인 문제 및 해결방법</a></li><li><a href="#82-주요-문제-유형별-분석">8.2 주요 문제 유형별 분석</a></li><li><a href="#83-트러블슈팅-체크리스트">8.3 트러블슈팅 체크리스트</a></li></ul><li><a href="#9-cursor-ai-워크플로우-완전-가이드">9. Cursor AI 워크플로우 완전 가이드</a></li><ul><li><a href="#91-개발-모드-선택-원칙과-효율성-극대화">9.1 개발 모드 선택 원칙과 효율성 극대화</a></li><ul><li><a href="#911-상황별-모드-매칭-매트릭스">9.1.1 상황별 모드 매칭 매트릭스</a></li><li><a href="#912-모드-전환-최적화-전략">9.1.2 모드 전환 최적화 전략</a></li></ul><li><a href="#92-일일-개발-루프-최적화-daily-development-loop">9.2 일일 개발 루프 최적화 (Daily Development Loop)</a></li><ul><li><a href="#921-아침-시작-루틴-morning-kickstart---15분">9.2.1 아침 시작 루틴 (Morning Kickstart - 15분)</a></li><li><a href="#922-개발-집중-시간-development-sprint---4시간">9.2.2 개발 집중 시간 (Development Sprint - 4시간)</a></li><li><a href="#923-오후-정리-루틴-afternoon-wrap-up---30분">9.2.3 오후 정리 루틴 (Afternoon Wrap-up - 30분)</a></li></ul><li><a href="#93-고급-리팩터링-방법론">9.3 고급 리팩터링 방법론</a></li><ul><li><a href="#931-단계별-리팩터링-프로세스">9.3.1 단계별 리팩터링 프로세스</a></li><li><a href="#932-리팩터링-품질-메트릭">9.3.2 리팩터링 품질 메트릭</a></li></ul><li><a href="#94-ai-기반-코드-리뷰-시스템">9.4 AI 기반 코드 리뷰 시스템</a></li><ul><li><a href="#941-자동-코드-리뷰-체크리스트">9.4.1 자동 코드 리뷰 체크리스트</a></li><li><a href="#942-ai-리뷰어-프롬프트-템플릿">9.4.2 AI 리뷰어 프롬프트 템플릿</a></li></ul><li><a href="#95-테스트-자동화-워크플로우">9.5 테스트 자동화 워크플로우</a></li><ul><li><a href="#951-tdd-with-ai-워크플로우">9.5.1 TDD with AI 워크플로우</a></li><li><a href="#952-테스트-케이스-생성-전략">9.5.2 테스트 케이스 생성 전략</a></li></ul><li><a href="#96-디버깅-및-오류-해결-프로세스">9.6 디버깅 및 오류 해결 프로세스</a></li><ul><li><a href="#961-스마트-디버깅-프로세스">9.6.1 스마트 디버깅 프로세스</a></li><li><a href="#962-로그-분석-자동화">9.6.2 로그 분석 자동화</a></li></ul><li><a href="#97-팀-협업-및-지식-공유-최적화">9.7 팀 협업 및 지식 공유 최적화</a></li><ul><li><a href="#971-지식-관리-시스템-knowledge-management-system">9.7.1 지식 관리 시스템 (Knowledge Management System)</a></li><li><a href="#972-코드-리뷰-문화-개선">9.7.2 코드 리뷰 문화 개선</a></li></ul><li><a href="#98-성능-최적화-자동화">9.8 성능 최적화 자동화</a></li><ul><li><a href="#981-성능-모니터링-및-분석">9.8.1 성능 모니터링 및 분석</a></li><li><a href="#982-자동-성능-최적화-워크플로우">9.8.2 자동 성능 최적화 워크플로우</a></li></ul><li><a href="#99-배포-및-devops-자동화">9.9 배포 및 DevOps 자동화</a></li><ul><li><a href="#991-cicd-파이프라인-최적화">9.9.1 CI/CD 파이프라인 최적화</a></li></ul><li><a href="#910-kpi-및-생산성-측정">9.10 KPI 및 생산성 측정</a></li><ul><li><a href="#9101-생산성-지표-대시보드">9.10.1 생산성 지표 대시보드</a></li><li><a href="#9102-주간-성과-리포트-자동화">9.10.2 주간 성과 리포트 자동화</a></li></ul><li><a href="#911-보안-및-컴플라이언스-자동화">9.11 보안 및 컴플라이언스 자동화</a></li><ul><li><a href="#9111-자동화된-보안-감사-시스템">9.11.1 자동화된 보안 감사 시스템</a></li></ul><li><a href="#912-지속적-학습-및-개선-체계">9.12 지속적 학습 및 개선 체계</a></li><ul><li><a href="#9121-개인화된-학습-경로">9.12.1 개인화된 학습 경로</a></li><li><a href="#9122-팀-역량-강화-프로그램">9.12.2 팀 역량 강화 프로그램</a></li></ul></ul></ul>
+</aside>
+<main class="main-content" role="main">
+
+<div class="content-body" id="content">
+<h1>커서(Cursor) AI 개발 도구 도입 가이드</h1>
 <div class="section">
 <h2 id="1-커서-ai-도구-소개">1. 커서 AI 도구 소개</h2>
 <h3 id="11-커서-ai란-무엇인가">1.1 커서 AI란 무엇인가</h3>
@@ -421,7 +784,7 @@ function calculateTotalPrice(items, taxRate = 0.1) {
 // 3. docker run -p 3000:3000 myapp</code></pre>
 </div>
 <div class="section">
-<h2 id="5-고급-설정-및-최적화">5. 고급 설정 및 최적화</h2>
+<h2 id="5-고급-설정-및-최적화">4. 고급 설정 및 최적화</h2>
 <h3 id="41-프라이버시-모드">4.1 프라이버시 모드</h3>
 <p>민감한 코드나 기업 환경에서 사용할 때 데이터 보안을 강화하는 기능입니다.</p>
 <div class="highlight-box">
@@ -751,7 +1114,7 @@ describe('formatCurrency', () =&gt; {
 </div>
 <div class="section">
 <h2 id="7-팀-협업을-위한-설정-및-규칙">7. 팀 협업을 위한 설정 및 규칙</h2>
-<h3 id="71-cursorrules-파일-활용-향상된-규칙-시스템">7.1 .cursorrules 파일 활용 (향상된 규칙 시스템)</h3>
+<h3 id="71-cursorrules-파일-활용-향상된-규칙-시스템">7.1 cursorrules 파일 활용 (향상된 규칙 시스템)</h3>
 <p>팀 전체가 일관된 코딩 스타일과 규칙을 따르도록 하는 핵심 기능입니다. 강력한 규칙 시스템으로 AI의 동작을 세밀하게 제어할 수 있습니다.</p>
 <div class="highlight-box">
 <strong>고급 규칙 기능들:</strong>
@@ -1629,11 +1992,8 @@ describe('EmailValidator', () =&gt; {
 <p><strong>문서 기준일:</strong> 2025년 9월 12일</p>
 <p>이 문서는 2025년 9월 12일 기준 최신 정보를 바탕으로 작성되었습니다.</p>
 </footer>
-</section>
+</div>
 </main>
 </div>
-<footer style="max-width:1200px; margin:24px auto; padding:16px 24px; color:var(--muted);">
-<small>© 2025. 업로드된 원문을 기반으로 자동 서식을 적용한 정리본입니다.</small>
-</footer>
 </body>
 </html>
