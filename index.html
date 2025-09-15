@@ -167,7 +167,7 @@ body::before {
 }
 
 .toc h3 {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-neon);
   margin-bottom: 12px;
@@ -201,7 +201,7 @@ body::before {
   border-radius: var(--radius-sm);
   text-decoration: none;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   transition: all 0.2s ease;
   border: none;
@@ -222,7 +222,7 @@ body::before {
 }
 
 .toc-list ul a {
-  font-size: 12px;
+  font-size: 13px;
   padding: 4px 6px;
   color: var(--text-muted);
 }
@@ -641,7 +641,7 @@ tr:last-child td {
   border-radius: var(--radius-sm);
   text-decoration: none;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   transition: all 0.2s ease;
   border: none;
@@ -656,7 +656,7 @@ tr:last-child td {
 }
 
 .toc-list ul a {
-  font-size: 12px;
+  font-size: 13px;
   padding: 4px 6px 4px 0;
   color: var(--text-muted);
 }
@@ -676,6 +676,22 @@ h4 + p, h4 + ul, h4 + ol, h4 + table {
   font-size: 0.9em;   /* h4 아래는 더 작게 */
 }
 
+
+/* --- Searchbar Styles --- */
+.searchbar { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.searchbar input[type="search"] { width: 240px; max-width: 38vw; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: inherit; outline: none; }
+.searchbar button { padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: inherit; cursor: pointer; }
+mark.search-hit { background: rgba(255, 230, 0, 0.35); padding: 0 2px; border-radius: 3px; }
+mark.search-current { background: rgba(0, 217, 255, 0.55); box-shadow: 0 0 0 2px rgba(0, 217, 255, 0.25); }
+
+/* --- v3 Header layout fix --- */
+.header-content, header .header-content, .header .header-content {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+.header-content .logo { margin-right: auto !important; flex: 0 0 auto !important; }
+.header-content .searchbar { margin-left: auto !important; flex: 0 0 auto !important; order: 999 !important; }
 </style>
 </head>
 <body>
@@ -683,6 +699,15 @@ h4 + p, h4 + ul, h4 + ol, h4 + table {
 <div class="header-content">
 <div class="logo">
 <div class="logo-icon">C</div>
+<div class="searchbar" role="search" aria-label="본문 검색">
+  <input id="searchInput" type="search" placeholder="본문 검색..." aria-label="검색어 입력"/>
+  <button id="searchBtn" type="button" title="검색 시작">찾기</button>
+  <button id="prevBtn" type="button" title="이전 찾기">이전</button>
+  <button id="nextBtn" type="button" title="다음 찾기">다음</button>
+  <button id="clearBtn" type="button" title="강조 초기화">초기화</button>
+  <span id="searchCounter" aria-live="polite" style="min-width:80px;text-align:right;"></span>
+</div>
+
 <span>Cursor AI 가이드</span>
 </div>
 </div>
@@ -2204,5 +2229,242 @@ describe('EmailValidator', () =&gt; {
 </div>
 </main>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const header = document.querySelector('.header-content') || document.querySelector('header .header-content') || document.querySelector('header');
+  const sb = document.querySelector('.searchbar');
+  if (header && sb && sb.parentElement !== header) {
+    header.appendChild(sb);
+  } else if (header && sb) {
+    header.appendChild(sb);
+  }
+
+  // 본문 검색 기능 구현 - 오른쪽 본문 영역만 검색 (사이드바 제외)
+  const contentEl = document.querySelector('.main-content') || document.getElementById('content');
+  const inputEl = document.getElementById('searchInput');
+  const searchBtn = document.getElementById('searchBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const counterEl = document.getElementById('searchCounter');
+
+  if (!contentEl || !inputEl || !searchBtn || !prevBtn || !nextBtn || !clearBtn || !counterEl) return;
+
+  let searchHits = [];
+  let currentIndex = -1;
+  let lastQuery = '';
+
+  // 마크 제거(원상복구) - 더 안정적인 방법
+  function clearHighlights() {
+    const marks = contentEl.querySelectorAll('mark.search-hit, mark.search-current');
+    marks.forEach(function(mark) {
+      // 마크의 텍스트 내용을 텍스트 노드로 교체
+      const textNode = document.createTextNode(mark.textContent);
+      mark.parentNode.replaceChild(textNode, mark);
+    });
+    
+    // 텍스트 노드 정규화 (인접한 텍스트 노드들 병합)
+    if (contentEl.normalize) {
+      contentEl.normalize();
+    }
+    
+    searchHits = [];
+    currentIndex = -1;
+    updateCounter();
+  }
+
+  // 텍스트 노드에 하이라이트 적용
+  function wrapMatchesInTextNode(textNode, queryLower, queryLen) {
+    const text = textNode.nodeValue;
+    const lower = text.toLowerCase();
+    
+    // 모든 매치 위치를 먼저 찾기
+    const matches = [];
+    let idx = 0;
+    while ((idx = lower.indexOf(queryLower, idx)) !== -1) {
+      matches.push(idx);
+      idx += queryLen;
+    }
+    
+    if (matches.length === 0) return;
+
+    const parent = textNode.parentNode;
+    const fragment = document.createDocumentFragment();
+    let lastIndex = 0;
+
+    // 각 매치에 대해 텍스트와 마크 노드 생성
+    matches.forEach(function(matchIndex) {
+      // 매치 이전 텍스트
+      if (matchIndex > lastIndex) {
+        const beforeText = text.slice(lastIndex, matchIndex);
+        fragment.appendChild(document.createTextNode(beforeText));
+      }
+      
+      // 매치된 텍스트를 마크로 감싸기
+      const mark = document.createElement('mark');
+      mark.className = 'search-hit';
+      mark.textContent = text.slice(matchIndex, matchIndex + queryLen);
+      fragment.appendChild(mark);
+      
+      lastIndex = matchIndex + queryLen;
+    });
+
+    // 마지막 매치 이후 남은 텍스트
+    if (lastIndex < text.length) {
+      const afterText = text.slice(lastIndex);
+      fragment.appendChild(document.createTextNode(afterText));
+    }
+
+    // 원본 텍스트 노드를 새로운 fragment로 교체
+    parent.replaceChild(fragment, textNode);
+  }
+
+  // 본문 전체 탐색하며 하이라이트
+  function highlightAll(query) {
+    if (!query) return;
+    const queryLower = query.toLowerCase();
+    const queryLen = query.length;
+
+    const walker = document.createTreeWalker(
+      contentEl,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode: function(node) {
+          if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+          const parentNode = node.parentNode;
+          if (!parentNode) return NodeFilter.FILTER_REJECT;
+          
+          const parentTag = parentNode.nodeName;
+          // 스크립트, 스타일, 기존 마크 태그는 제외
+          if (parentTag === 'SCRIPT' || parentTag === 'STYLE' || parentTag === 'NOSCRIPT') {
+            return NodeFilter.FILTER_REJECT;
+          }
+          
+          // 이미 마크 태그로 감싸진 텍스트는 제외 (중복 방지)
+          if (parentTag === 'MARK') {
+            return NodeFilter.FILTER_REJECT;
+          }
+          
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      }
+    );
+
+    const textNodes = [];
+    let current;
+    while ((current = walker.nextNode())) {
+      textNodes.push(current);
+    }
+    textNodes.forEach(function(n) { wrapMatchesInTextNode(n, queryLower, queryLen); });
+    searchHits = Array.prototype.slice.call(contentEl.querySelectorAll('mark.search-hit'));
+  }
+
+  // 현재 항목 강조 및 스크롤
+  function focusCurrent() {
+    contentEl.querySelectorAll('mark.search-current').forEach(function(m) {
+      m.classList.remove('search-current');
+    });
+    if (currentIndex < 0 || currentIndex >= searchHits.length) return;
+    const el = searchHits[currentIndex];
+    el.classList.add('search-current');
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    updateCounter();
+  }
+
+  function updateCounter() {
+    if (!counterEl) return;
+    if (searchHits.length === 0) {
+      counterEl.textContent = '0/0';
+    } else {
+      const pos = currentIndex >= 0 ? currentIndex + 1 : 0;
+      counterEl.textContent = pos + '/' + searchHits.length;
+    }
+  }
+
+  function runSearch(fromTyping) {
+    if (fromTyping === undefined) fromTyping = false;
+    const query = (inputEl.value || '').trim();
+    if (!query) {
+      clearHighlights();
+      lastQuery = '';
+      return;
+    }
+    
+    // 타이핑 중에는 동일 쿼리라도 다음으로 이동하지 않음
+    if (!fromTyping && lastQuery === query && searchHits.length > 0) {
+      move(1);
+      return;
+    }
+    
+    // 항상 이전 하이라이트를 완전히 제거한 후 새로 검색
+    clearHighlights();
+    
+    // 약간의 지연 후 검색 실행 (DOM 정리 시간 확보)
+    setTimeout(function() {
+      highlightAll(query);
+      lastQuery = query;
+      currentIndex = searchHits.length > 0 ? 0 : -1;
+      focusCurrent();
+    }, 10);
+  }
+
+  function move(delta) {
+    if (searchHits.length === 0) return;
+    if (currentIndex === -1) {
+      currentIndex = 0;
+    } else {
+      currentIndex = (currentIndex + delta + searchHits.length) % searchHits.length;
+    }
+    focusCurrent();
+  }
+
+  function clearAll() {
+    inputEl.value = '';
+    lastQuery = '';
+    clearHighlights();
+  }
+
+  // 간단 디바운스 유틸
+  function debounce(fn, delay) {
+    let timer;
+    return function() {
+      clearTimeout(timer);
+      const self = this;
+      const args = arguments;
+      timer = setTimeout(function(){ fn.apply(self, args); }, delay);
+    };
+  }
+
+  let isComposing = false;
+
+  // 이벤트 바인딩
+  searchBtn.addEventListener('click', function(){ runSearch(false); });
+  nextBtn.addEventListener('click', function(){ move(1); });
+  prevBtn.addEventListener('click', function(){ move(-1); });
+  clearBtn.addEventListener('click', clearAll);
+  inputEl.addEventListener('keydown', function(e) {
+    // Enter: 검색 또는 다음, Shift+Enter: 이전
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (e.shiftKey) {
+        move(-1);
+      } else {
+        runSearch(false);
+      }
+    }
+  });
+  inputEl.addEventListener('compositionstart', function(){ isComposing = true; });
+  inputEl.addEventListener('compositionend', function(){ 
+    isComposing = false; 
+    runSearch(true); 
+  });
+  inputEl.addEventListener('input', debounce(function(){ 
+    // 한글 조합 중이든 영문이든 모두 검색 실행
+    runSearch(true); 
+  }, 150));
+});
+</script>
+
 </body>
 </html>
